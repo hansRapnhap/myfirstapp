@@ -2,6 +2,8 @@ package be.rapnhap.myfirstapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -17,6 +19,7 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.os.EnvironmentCompat;
+import androidx.print.PrintHelper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -81,6 +84,20 @@ public class MainActivity extends AppCompatActivity {
             Button sendButton = (Button) findViewById(R.id.send);
             Button closeButton = (Button) findViewById(R.id.close);
 
+            Button imagePrintButton = (Button) findViewById(R.id.butImagePrint);
+            imagePrintButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    try {
+                        doBitmapPrint();
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
+
+
             // text label and input box
             myLabel = (TextView) findViewById(R.id.label);
             myTextbox = (EditText) findViewById(R.id.entry);
@@ -137,6 +154,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    void doBitmapPrint() {
+        PrintHelper bitmapPrinter = new PrintHelper(this);
+        bitmapPrinter.setScaleMode(PrintHelper.SCALE_MODE_FIT);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.image);
+        bitmapPrinter.printBitmap("text",bitmap);
+    }
+
 
     // this will find a bluetooth printer device
     void findBT() {
