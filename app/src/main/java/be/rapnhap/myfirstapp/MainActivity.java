@@ -50,7 +50,7 @@ import java.util.Set;
 import java.util.UUID;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity<AppCompatActivity> extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "be.rapnhap.myfirstapp.MESSAGE";
     private static final String LOG_TAG = "Log Tag";
 
@@ -180,12 +180,13 @@ public class MainActivity extends AppCompatActivity {
 
             Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
+            // found : BC:A5:8B:9E:E1:38 - 04:FE:A1:87:85:AE
             if(pairedDevices.size() > 0) {
                 for (BluetoothDevice device : pairedDevices) {
 
                     // RPP300 is the name of the bluetooth printer device
                     // we got this name from the list of paired devices
-                    if (device.getName().equals("RPP300")) {
+                    if (device.getName().equals("TM-P80_001306")) {
                         mmDevice = device;
                         break;
                     }
@@ -297,10 +298,76 @@ public class MainActivity extends AppCompatActivity {
         try {
 
             // the text typed by the user
-            String msg = myTextbox.getText().toString();
-            msg += "\n";
+            //msg +=
+            //myTextbox.getText().toString();
+            //msg += "TEST PRINT\nLine2\n";
+            //mmOutputStream.write(msg.getBytes());
 
+            // initialize printer
+            mmOutputStream.write(27); // ESC
+            mmOutputStream.write('@');
+
+            // GS "!" 0x11 - Select character size: (horizontal (times 3) x vertical (times 3))
+            //byte[] bigC = new byte[] { 29, '!', 0x22 };
+            //mmOutputStream.write(bigC);
+            // GS "!" 0x22 - Select character size: (horizontal (times 2) x vertical (times 2))
+            byte[] bigC2 = new byte[] { 29, '!', 0x11 };
+            mmOutputStream.write(bigC2);
+            // ESC "E" n - Emphasised ON
+            byte[] emOn = new byte[] { 27, 'E', 1 };
+            mmOutputStream.write(emOn);
+            // print text
+            String msg = "RAP 'N HAP\n\n";
             mmOutputStream.write(msg.getBytes());
+            // ESC "E" n - Emphasised OFF
+            byte[] emOff = new byte[] { 27, 'E', 0 };
+            mmOutputStream.write(emOff);
+
+            //msg = " BE 0589 860 067  \n";
+            //mmOutputStream.write(msg.getBytes());
+            msg = " www.rapnhap.be  \n\n\n";
+            mmOutputStream.write(msg.getBytes());
+
+            // feed 2 lines
+            mmOutputStream.write(27); // ESC
+            mmOutputStream.write('d');
+            mmOutputStream.write(1);
+
+            //msg = " 1 A Bieslook     2.00  \n";
+            //mmOutputStream.write(msg.getBytes());
+            //msg = " 3 A Zalm         9.00  \n";
+            //mmOutputStream.write(msg.getBytes());
+            msg = " 1 B Champignon   3.00  \n";
+            mmOutputStream.write(msg.getBytes());
+
+            // ESC "-" n - Underline on 2 dots
+            byte[] ulOn = new byte[] { 27, '-', 2 };
+            mmOutputStream.write(ulOn);
+            msg = " 4 B Appel       12.00  \n";
+            mmOutputStream.write(msg.getBytes());
+
+            // ESC "-" n - Underline off
+            byte[] ulOff = new byte[] { 27, '-', 0 };
+            mmOutputStream.write(ulOff);
+
+            //msg = "              --------  \n";
+            //mmOutputStream.write(msg.getBytes());
+            msg = " TOTAAL          26.00  \n";
+            mmOutputStream.write(msg.getBytes());
+
+
+            // feed 5 lines
+            mmOutputStream.write(27); // ESC
+            mmOutputStream.write('d');
+            mmOutputStream.write(2);
+
+            // cut paper
+            //outputStream.write(29); // GS
+            //outputStream.write('V');
+            //outputStream.write(48);
+            // cut that paper!
+            byte[] cutP = new byte[] { 0x1d, 'V', 1 };
+            mmOutputStream.write(cutP);
 
             // tell the user data were sent
             myLabel.setText("Data sent.");
@@ -357,6 +424,10 @@ public class MainActivity extends AppCompatActivity {
             // /storage/6463-3031/Android/data/be.rapnhap.myfirstapp/files/external/ SUCCEEDS !
             File pathHandle = new File("/storage/6463-3031/Android/data/be.rapnhap.myfirstapp/files/external/");
 
+
+            //File pathHandle = new File("/storage/6463-3031/TestSamsung/");
+            // java.io.FileNotFoundException: /storage/6463-3031/TestSamsung/20201210_POS.txt (No such file or directory)
+
             File fileHandle = new File(pathHandle, fileName);
 
             fileExists = fileHandle.exists();
@@ -380,6 +451,37 @@ public class MainActivity extends AppCompatActivity {
             writer.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        // Samsung info
+        // ----------------------------------------------------------------------------------------------
+        File dir = new File(Environment.getExternalStorageDirectory(),
+                "SamsungDirectoryName" );
+        if (!dir.exists())
+        {
+            dir.mkdirs();
+        }
+
+        String myFilePath = dir.getAbsolutePath() + File.separator + "SamsungFileName";
+
+        // Now use this file path with *FileOutputStream *to write data in your text
+        // file. You can find a lot of guidelines on the internet.
+        FileOutputStream streamS = null;
+        try {
+            streamS = new FileOutputStream(myFilePath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            data += "\n\n SAMSUNG hint writes to " + myFilePath.toString() + "\r\n";
+            String logString1 = new String(data);
+            streamS.write(logString1.getBytes());
+            data += "\n\n SAMSUNG hint written to " + myFilePath.toString() + "\r\n";
+            // check if we can add to the same file
+            streamS.write(logString1.getBytes());
+
+        } finally {
+            streamS.close();
         }
 
 

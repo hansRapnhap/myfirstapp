@@ -242,8 +242,36 @@ public class MainActivity_old extends AppCompatActivity {
         writer.flush();
         writer.close();
 
+        // Samsung info
+        // ----------------------------------------------------------------------------------------------
+        File dir = new File(Environment.getExternalStorageDirectory(),
+                "SamsungDirectoryName" );
+        if (!dir.exists())
+        {
+            dir.mkdirs();
+        }
 
+        String myFilePath = dir.getAbsolutePath() + File.separator + "YourFileName";
 
+        // Now use this file path with *FileOutputStream *to write data in your text
+        // file. You can find a lot of guidelines on the internet.
+        FileOutputStream streamS = null;
+        try {
+            streamS = new FileOutputStream(file4);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            logString += "my-file-name4.txt TRIES write to " + file4.toString() + "\r\n";
+            String logString1 = new String(logString);
+            streamS.write(logString.getBytes());
+            logString += "my-file-name4.txt written to " + file4.toString() + "\r\n";
+            // check if we can add to the same file
+            streamS.write(logString.getBytes());
+
+        } finally {
+            streamS.close();
+        }
 
 
 
